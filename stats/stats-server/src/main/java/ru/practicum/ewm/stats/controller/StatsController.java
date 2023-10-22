@@ -1,7 +1,6 @@
 package ru.practicum.ewm.stats.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +10,8 @@ import ru.practicum.ewm.dto.stats.ViewStatsDto;
 import ru.practicum.ewm.stats.service.StatsService;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -27,9 +28,9 @@ public class StatsController {
     @GetMapping(path = "/stats")
     public ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
                                                        @RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
-                                                       @RequestParam(value = "uris", required = false) List<String> uris,
-                                                       @RequestParam(value = "unique", required = false) @DefaultValue("false") boolean unique
+                                                       @RequestParam(value = "uris", required = false) String[] uris,
+                                                       @RequestParam(value = "unique", required = false, defaultValue = "false") Boolean unique
     ) {
-        return new ResponseEntity<>(statsService.getStats(start, end, uris, unique), HttpStatus.OK);
+        return new ResponseEntity<>(statsService.getStats(start, end, uris == null ? Collections.emptyList() : Arrays.asList(uris), unique), HttpStatus.OK);
     }
 }
