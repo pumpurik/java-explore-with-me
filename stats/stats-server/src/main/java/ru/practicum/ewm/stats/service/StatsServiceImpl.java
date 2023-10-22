@@ -10,7 +10,6 @@ import ru.practicum.ewm.stats.service.mapping.EndpointHitMapping;
 import ru.practicum.ewm.stats.service.mapping.ViewStatsMapping;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,11 +25,11 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        List<ViewStats> statsUnique = Collections.emptyList();
-        if (unique) {
-            statsUnique = endpointHitRepository.findStatsUnique(start, end, uris);
+        List<ViewStats> statsUnique;
+        if (uris == null || uris.isEmpty()) {
+            statsUnique = unique ? endpointHitRepository.findStatsUnique(start, end) : endpointHitRepository.findStatsNotUnique(start, end);
         } else {
-            statsUnique = endpointHitRepository.findStatsNotUnique(start, end, uris);
+            statsUnique = unique ? endpointHitRepository.findStatsUnique(start, end, uris) : endpointHitRepository.findStatsNotUnique(start, end, uris);
         }
         return statsUnique.stream().map(ViewStatsMapping::toViewStatsDto).collect(Collectors.toList());
     }

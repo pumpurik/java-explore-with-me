@@ -20,6 +20,7 @@ public class StatsController {
 
     @PostMapping(path = "/hit")
     public ResponseEntity<Void> createHit(@RequestBody EndpointHitDto endpointHitDto) {
+        statsService.createHit(endpointHitDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

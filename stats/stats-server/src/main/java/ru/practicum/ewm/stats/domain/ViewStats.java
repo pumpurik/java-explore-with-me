@@ -13,5 +13,5 @@ import lombok.experimental.FieldDefaults;
 public class ViewStats {
     String app;
     String uri;
-    int hits;
+    long hits;
 }
