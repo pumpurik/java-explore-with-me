@@ -18,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StatsController {
     private final StatsService statsService;
+    private static final String PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @PostMapping(path = "/hit")
     public ResponseEntity<Void> createHit(@RequestBody EndpointHitDto endpointHitDto) {
@@ -26,8 +27,8 @@ public class StatsController {
     }
 
     @GetMapping(path = "/stats")
-    public ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
-                                                       @RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+    public ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam("start") @DateTimeFormat(pattern = PATTERN) LocalDateTime start,
+                                                       @RequestParam("end") @DateTimeFormat(pattern = PATTERN) LocalDateTime end,
                                                        @RequestParam(value = "uris", required = false) String[] uris,
                                                        @RequestParam(value = "unique", required = false, defaultValue = "false") Boolean unique
     ) {
