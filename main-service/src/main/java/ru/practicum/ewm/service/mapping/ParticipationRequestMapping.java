@@ -13,6 +13,6 @@ public interface ParticipationRequestMapping {
     ParticipationRequestDto participationRequestToDto(ParticipationRequest participationRequest);
 
     @InheritInverseConfiguration
-    ParticipationRequest DtoToParticipation(ParticipationRequestDto participationRequestDto);
+    ParticipationRequest dtoToParticipation(ParticipationRequestDto participationRequestDto);
 
 }
