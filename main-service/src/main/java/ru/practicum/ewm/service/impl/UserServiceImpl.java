@@ -1,10 +1,12 @@
 package ru.practicum.ewm.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.user.NewUserRequest;
 import ru.practicum.ewm.dto.user.UserDto;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.repository.UserRepository;
 import ru.practicum.ewm.service.UserService;
@@ -32,8 +34,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createUser(NewUserRequest newUserRequest) {
-        return userMapping.userToDto(userRepository.save(userMapping.newUserRequestToUser(newUserRequest)));
+    public UserDto createUser(NewUserRequest newUserRequest) throws ConflictException {
+        try {
+            return userMapping.userToDto(userRepository.save(userMapping.newUserRequestToUser(newUserRequest)));
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException();
+        }
     }
 
     @Override

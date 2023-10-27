@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.client.stats.StatsClient;
 import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.UpdateEventAdminRequest;
+import ru.practicum.ewm.enums.EventStateEnum;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.service.AdminEventService;
 
@@ -28,12 +30,12 @@ public class AdminEventController {
     @GetMapping
     public ResponseEntity<List<EventFullDto>> getEvents(
             @RequestParam(required = false) Long[] users,
-            @RequestParam(required = false) String[] states,
+            @RequestParam(required = false) EventStateEnum[] states,
             @RequestParam(required = false) Long[] categories,
             @RequestParam(required = false) @DateTimeFormat(pattern = PATTERN) LocalDateTime rangeStart,
             @RequestParam(required = false) @DateTimeFormat(pattern = PATTERN) LocalDateTime rangeEnd,
-            @RequestParam(required = false) Integer from,
-            @RequestParam(required = false) Integer size
+            @RequestParam(required = false, defaultValue = "0") Integer from,
+            @RequestParam(required = false, defaultValue = "10") Integer size
 
     ) {
         return new ResponseEntity<>(adminEventService.getEvents(users == null ? null : Arrays.asList(users),
@@ -42,7 +44,8 @@ public class AdminEventController {
     }
 
     @PatchMapping("/{eventId}")
-    public ResponseEntity<EventFullDto> updateEvent(@PathVariable Long eventId, @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) throws NotFoundException {
+    public ResponseEntity<EventFullDto> updateEvent(@PathVariable Long eventId,
+                                                    @Valid @RequestBody(required = false) UpdateEventAdminRequest updateEventAdminRequest) throws NotFoundException, ConflictException {
         return new ResponseEntity<>(adminEventService.updateEvent(eventId, updateEventAdminRequest), HttpStatus.OK);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.client.stats.StatsClient;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.category.NewCategoryDto;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.service.CategoryService;
 
@@ -20,19 +21,19 @@ public class AdminCategoriesController {
     private final StatsClient statsClient;
 
     @PostMapping
-    public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody NewCategoryDto newCategoryDto) {
+    public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody NewCategoryDto newCategoryDto) throws ConflictException {
         return new ResponseEntity<>(categoryService.createCategory(newCategoryDto), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{catId}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long catId) throws NotFoundException {
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long catId) throws NotFoundException, ConflictException {
         categoryService.deleteCategory(catId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
     }
 
     @PatchMapping("/{catId}")
-    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long catId, @Valid @RequestBody NewCategoryDto updateCategoryDto) throws NotFoundException {
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long catId, @Valid @RequestBody NewCategoryDto updateCategoryDto) throws NotFoundException, ConflictException {
         return new ResponseEntity<>(categoryService.updateCategory(catId, updateCategoryDto), HttpStatus.OK);
     }
 }

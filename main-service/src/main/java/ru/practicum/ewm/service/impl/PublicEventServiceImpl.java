@@ -2,7 +2,10 @@ package ru.practicum.ewm.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.enums.SortEnum;
 import ru.practicum.ewm.exception.NotFoundException;
@@ -11,6 +14,7 @@ import ru.practicum.ewm.service.PublicEventService;
 import ru.practicum.ewm.service.mapping.EventMapping;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,19 +25,47 @@ public class PublicEventServiceImpl implements PublicEventService {
     private final EventRepository eventRepository;
     private final EventMapping eventMapping;
 
-
     @Override
-    public List<EventShortDto> getEvents(String text, List<Long> categories, boolean paid, LocalDateTime rangeStart,
-                                         LocalDateTime rangeEnd, boolean onlyAvailable, SortEnum sort, Integer from, Integer size) {
-        List<EventShortDto> collect = eventRepository.findAllByPublic(text, categories, paid, rangeStart, rangeEnd)
-                .stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList());
-        return collect;
+    public List<EventShortDto> getEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
+                                         LocalDateTime rangeEnd, boolean onlyAvailable, SortEnum sort, Integer from, Integer size) throws NotFoundException {
+        if (rangeStart == null) rangeEnd = LocalDateTime.now();
+        List<EventShortDto> eventShortDtos;
+        if (sort != null) {
+            eventShortDtos = onlyAvailable ? eventRepository.
+                    findAllByPublicOnlyAvailable(
+                            text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size,
+                                    Sort.by(Sort.Order.desc(convertSortProperty(sort))))
+                    ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList()) :
+                    eventRepository.findAllByPublic(
+                            text, categories, paid, rangeStart, rangeEnd, PageRequest.of(from, size,
+                                    Sort.by(Sort.Order.desc(convertSortProperty(sort))))
+                    ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList())
+            ;
+
+        } else {
+            eventShortDtos = onlyAvailable ? eventRepository.
+                    findAllByPublicOnlyAvailable(
+                            text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size)
+                    ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList()) :
+                    eventRepository.findAllByPublic(
+                            text, categories, paid, rangeStart, rangeEnd, PageRequest.of(from, size)
+                    ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList());
+
+        }
+        if (eventShortDtos.isEmpty()) throw new NotFoundException();
+        return eventShortDtos;
     }
 
     @Override
-    public EventShortDto getEvent(Long id) throws NotFoundException {
-        return eventMapping.eventToEventShortDto(eventRepository.findById(id).orElseThrow(() -> {
+    public EventFullDto getEvent(Long id) throws NotFoundException {
+        EventFullDto eventFullDto = eventMapping.eventToEventFullDto(eventRepository.findById(id).orElseThrow(() -> {
             return new NotFoundException();
         }));
+        return eventFullDto;
+    }
+
+    private String convertSortProperty(SortEnum sortEnum) {
+        if (sortEnum.equals(SortEnum.VIEWS)) return "views";
+        else return "eventDate";
     }
 }

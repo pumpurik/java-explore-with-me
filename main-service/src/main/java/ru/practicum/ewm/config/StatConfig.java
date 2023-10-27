@@ -9,7 +9,7 @@ import ru.practicum.ewm.client.stats.StatsClient;
 @Configuration
 public class StatConfig {
     @Bean
-    public StatsClient statsClient(@Value("stats.server.url") String statUrl, RestTemplateBuilder builder) {
+    public StatsClient statsClient(@Value("${stats.server.url}") String statUrl, RestTemplateBuilder builder) {
         return new StatsClient(statUrl, builder);
     }
 }

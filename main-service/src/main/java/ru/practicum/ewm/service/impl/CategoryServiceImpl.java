@@ -2,11 +2,13 @@ package ru.practicum.ewm.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.domain.Category;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.category.NewCategoryDto;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.repository.CategoryRepository;
 import ru.practicum.ewm.service.CategoryService;
@@ -37,25 +39,36 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDto createCategory(NewCategoryDto newCategoryDto) {
-        return categoryMapping.categoryToCategoryDto(categoryRepository.save(categoryMapping.newCategoryDtoToCategory(newCategoryDto)));
+    public CategoryDto createCategory(NewCategoryDto newCategoryDto) throws ConflictException {
+        try {
+            return categoryMapping.categoryToCategoryDto(categoryRepository.save(categoryMapping.newCategoryDtoToCategory(newCategoryDto)));
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException();
+        }
     }
 
     @Override
-    public void deleteCategory(Long catId) throws NotFoundException {
-        categoryRepository.delete(categoryRepository.findById(catId).orElseThrow(() -> {
+    public void deleteCategory(Long catId) throws NotFoundException, ConflictException {
+        Category category = categoryRepository.findById(catId).orElseThrow(() -> {
             log.info("", catId);
             return new NotFoundException(String.format("", catId));
-        }));
+        });
+        if (!category.getEvents().isEmpty()) throw new ConflictException();
+        categoryRepository.delete(category);
+
     }
 
     @Override
-    public CategoryDto updateCategory(Long catId, NewCategoryDto newCategoryDto) throws NotFoundException {
+    public CategoryDto updateCategory(Long catId, NewCategoryDto newCategoryDto) throws NotFoundException, ConflictException {
         Category category = categoryRepository.findById(catId).orElseThrow(() -> {
             log.info("", catId);
             return new NotFoundException(String.format("", catId));
         });
         category.setName(newCategoryDto.getName());
-        return categoryMapping.categoryToCategoryDto(categoryRepository.save(category));
+        try {
+            return categoryMapping.categoryToCategoryDto(categoryRepository.save(category));
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException();
+        }
     }
 }

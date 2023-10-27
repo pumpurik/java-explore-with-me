@@ -7,7 +7,9 @@ import ru.practicum.ewm.dto.compilation.CompilationDto;
 import ru.practicum.ewm.dto.compilation.NewCompilationDto;
 import ru.practicum.ewm.dto.compilation.UpdateCompilationRequest;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = EventMapping.class)
@@ -25,8 +27,8 @@ public interface CompilationMapping {
     Compilation updateCompilationRequestToCompilation(NewCompilationDto newCategoryDto, @Context List<Event> events);
 
     @Named("mapEventLongToEvent")
-    default List<Event> mapEventLongToEvent(List<Long> eventsLong, @Context List<Event> events) {
-        return events;
+    default Set<Event> mapEventLongToEvent(List<Long> eventsLong, @Context List<Event> events) {
+        return new LinkedHashSet<>(events);
     }
 
     List<Long> mapEventToLongList(List<Event> events);

@@ -11,6 +11,7 @@ import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.UpdateEventAdminRequest;
 import ru.practicum.ewm.enums.EventStateEnum;
 import ru.practicum.ewm.enums.StateActionEnum;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.repository.CategoryRepository;
 import ru.practicum.ewm.repository.EventRepository;
@@ -21,6 +22,9 @@ import ru.practicum.ewm.service.mapping.LocationMapping;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static ru.practicum.ewm.urils.ConvertUtils.convertToState;
+import static ru.practicum.ewm.urils.NullUtils.*;
 
 @Service
 @Slf4j
@@ -33,30 +37,44 @@ public class AdminEventServiceImpl implements AdminEventService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventFullDto> getEvents(List<Long> users, List<String> states, List<Long> categories, LocalDateTime rangeStart,
+    public List<EventFullDto> getEvents(List<Long> users, List<EventStateEnum> states, List<Long> categories, LocalDateTime rangeStart,
                                         LocalDateTime rangeEnd, Integer from, Integer size) {
-        boolean b = from != null && size != null;
-        List<EventFullDto> eventFullDtos = b ?
+        List<EventFullDto> eventFullDtos =
                 eventRepository
-                        .findAllByStateInAndInitiatorIdInAndCategoryIdInAndEventDateBetween(states.stream().map(EventStateEnum::valueOf).collect(Collectors.toList()), users, categories,
-                                rangeStart, rangeEnd, PageRequest.of(from, size)).getContent().stream()
-                        .map(eventMapping::eventToEventFullDto).collect(Collectors.toList()) :
-                eventRepository.findAllByAdmin(users, states, categories, rangeStart, rangeEnd).stream()
+                        .findAllByAdmin(users, states, categories,
+                                rangeStart, rangeEnd, PageRequest.of(from, size)).stream()
                         .map(eventMapping::eventToEventFullDto).collect(Collectors.toList());
+//                eventRepository.findAllByAdmin(users, states, categories, rangeStart, rangeEnd).stream()
+//                        .map(eventMapping::eventToEventFullDto).collect(Collectors.toList());
         return eventFullDtos;
     }
 
     @Override
-    public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) throws NotFoundException {
+    public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) throws NotFoundException, ConflictException {
         Category category = null;
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
             return new NotFoundException();
         });
-        if (updateEventAdminRequest != null) {
-            category = categoryRepository.findById(updateEventAdminRequest.getCategory()).orElse(null);
+        if (!event.getState().equals(EventStateEnum.PENDING) && equalsIgnoreNullFalse.apply(getOrDefault(() ->
+                updateEventAdminRequest.getStateAction().name(), StateActionEnum.PUBLISH_EVENT.name()), StateActionEnum.PUBLISH_EVENT.name())) {
+            throw new ConflictException();
         }
+        if (event.getState().equals(EventStateEnum.CANCELED) && equalsIgnoreNullFalse.apply(getOrDefault(() ->
+                updateEventAdminRequest.getStateAction().name(), StateActionEnum.PUBLISH_EVENT.name()), StateActionEnum.PUBLISH_EVENT.name())) {
+            throw new ConflictException();
+        }
+        if (equalsIgnoreNullFalse.apply(getOrNull(() -> updateEventAdminRequest.getStateAction().name()), StateActionEnum.REJECT_EVENT.name()) &&
+                event.getState().equals(EventStateEnum.PUBLISHED)) {
+            throw new ConflictException();
+        }
+        if (updateEventAdminRequest != null) {
+            if (updateEventAdminRequest.getCategory() != null) {
+                category = categoryRepository.findById(updateEventAdminRequest.getCategory()).orElse(null);
+            }
+            return eventMapping.eventToEventFullDto(eventRepository.save(mapUpdateEventAdminRequestToEvent(updateEventAdminRequest, event, category)));
+        }
+        return eventMapping.eventToEventFullDto(eventRepository.save(event));
 
-        return eventMapping.eventToEventFullDto(eventRepository.save(mapUpdateEventAdminRequestToEvent(updateEventAdminRequest, event, category)));
     }
 
     private Event mapUpdateEventAdminRequestToEvent(UpdateEventAdminRequest update, Event event, Category category) {
@@ -68,15 +86,11 @@ public class AdminEventServiceImpl implements AdminEventService {
         if (update.getLocationDto() != null)
             event.setLocation(locationMapping.locationDtoToLocation(update.getLocationDto()));
         if (update.getStateAction() != null) event.setState(convertToState(update.getStateAction()));
-        event.setParticipantLimit(update.getParticipantLimit());
-        event.setRequestModeration(update.getRequestModeration());
-        event.setPaid(update.getPaid());
+        if (update.getParticipantLimit() != null) event.setParticipantLimit(update.getParticipantLimit());
+        if (update.getRequestModeration() != null) event.setRequestModeration(update.getRequestModeration());
+        if (update.getPaid() != null) event.setPaid(update.getPaid());
         return event;
     }
 
-    private EventStateEnum convertToState(StateActionEnum stateActionEnum) {
-        if (stateActionEnum == StateActionEnum.PUBLISH_EVENT) return EventStateEnum.PUBLISHED;
-        if (stateActionEnum == StateActionEnum.REJECT_EVENT) return EventStateEnum.CANCELED;
-        return EventStateEnum.PENDING;
-    }
+
 }

@@ -1,7 +1,6 @@
 package ru.practicum.ewm.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class NewEventDto {
     @NotBlank
     @Size(min = 20, max = 2000)
@@ -34,12 +32,11 @@ public class NewEventDto {
     @NotNull
     @FutureOrPresent
     LocalDateTime eventDate;
-
+    @NotNull
     LocationDto location;
-
     Boolean paid;
     Integer participantLimit;
-    Boolean requestModeration;
+    Boolean requestModeration = true;
     @Size(min = 3, max = 120)
     @NotBlank
     String title;

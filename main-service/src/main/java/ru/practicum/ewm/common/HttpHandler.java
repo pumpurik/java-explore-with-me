@@ -1,10 +1,10 @@
 package ru.practicum.ewm.common;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import ru.practicum.ewm.client.stats.StatsClient;
+import ru.practicum.ewm.config.AppNameConf;
 import ru.practicum.ewm.dto.stats.EndpointHitDto;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,12 +15,11 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class HttpHandler implements HandlerInterceptor {
     private final StatsClient statsClient;
-    @Value("${spring.application.name}")
-    private String appName;
+    private final AppNameConf appNameConf;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        statsClient.addStat(EndpointHitDto.builder().app(appName).ip(request.getLocalAddr())
+        statsClient.addStat("/hit", EndpointHitDto.builder().app(appNameConf.getAppName()).ip(request.getLocalAddr())
                 .uri(request.getRequestURI())
                 .timestamp(LocalDateTime.now()).build());
         return HandlerInterceptor.super.preHandle(request, response, handler);

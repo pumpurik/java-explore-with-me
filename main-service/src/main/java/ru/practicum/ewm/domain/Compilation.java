@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -20,7 +21,12 @@ public class Compilation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
     @ManyToMany(fetch = FetchType.LAZY)
-    List<Event> events;
+    @JoinTable(
+            name = "compilations_events",
+            joinColumns = @JoinColumn(name = "compilation_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_id")
+    )
+    Set<Event> events = new LinkedHashSet<>();
     @Column(name = "pinned")
     boolean pinned;
     @Column(name = "title")

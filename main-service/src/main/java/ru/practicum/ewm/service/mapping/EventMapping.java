@@ -4,16 +4,15 @@ import org.mapstruct.*;
 import ru.practicum.ewm.domain.Category;
 import ru.practicum.ewm.domain.Event;
 import ru.practicum.ewm.dto.event.*;
+import ru.practicum.ewm.urils.NullUtils;
 
-@Mapper(componentModel = "spring", uses = {CategoryMapping.class, UserMapping.class, ParticipationRequestMapping.class})
+@Mapper(componentModel = "spring", uses = {CategoryMapping.class, UserMapping.class, ParticipationRequestMapping.class},
+        imports = NullUtils.class)
 public interface EventMapping {
+    @Mapping(target = "confirmedRequests", expression = "java(NullUtils.getOrDefault(()->event.getConfirmedRequests().size(), 0))")
     EventFullDto eventToEventFullDto(Event event);
 
-//    @Mapping()
-//    EventRequestStatusUpdateRequest eventToEventRequestStatusUpdateRequest(Event event);
-//
-//    EventRequestStatusUpdateResult eventToEventRequestStatusUpdateResult(Event event);
-
+    @Mapping(target = "confirmedRequests", expression = "java(NullUtils.getOrDefault(()->event.getConfirmedRequests().size(), 0))")
     EventShortDto eventToEventShortDto(Event event);
 
     NewEventDto eventToNewEventDto(Event event);
@@ -22,9 +21,6 @@ public interface EventMapping {
 
     UpdateEventUserRequest eventToUpdateEventUserRequest(Event event);
 
-//    Long mapCategoryToLong(Category event);
-
-    //    @AfterMapping
     default Long convertEventToLong(Category category) {
         if (category != null) {
             return category.getId();

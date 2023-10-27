@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.client.stats.StatsClient;
 import ru.practicum.ewm.dto.ParticipationRequestDto;
 import ru.practicum.ewm.dto.event.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.dto.event.EventRequestStatusUpdateResult;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.service.ParticipationRequestService;
 
@@ -28,7 +30,7 @@ public class PrivateParticipationController {
     public ResponseEntity<ParticipationRequestDto> createRequestParticipation(
             @PathVariable Long userId,
             @RequestParam Long eventId
-    ) throws NotFoundException {
+    ) throws NotFoundException, ConflictException {
         return new ResponseEntity<>(participationRequestService.createRequestParticipation(userId, eventId), HttpStatus.CREATED);
     }
 
@@ -49,11 +51,11 @@ public class PrivateParticipationController {
     }
 
     @PatchMapping("/{userId}/events/{eventId}/requests")
-    public ResponseEntity<ParticipationRequestDto> updateEventUserRequest(
+    public ResponseEntity<EventRequestStatusUpdateResult> updateEventUserRequest(
             @PathVariable Long userId,
             @PathVariable Long eventId,
-            @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest
-    ) {
+            @RequestBody(required = false) EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest
+    ) throws NotFoundException, ConflictException {
         return new ResponseEntity<>(participationRequestService
                 .updateEventUserRequest(userId, eventId, eventRequestStatusUpdateRequest), HttpStatus.OK);
     }

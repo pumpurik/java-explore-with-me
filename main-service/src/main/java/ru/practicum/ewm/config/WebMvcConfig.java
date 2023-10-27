@@ -13,6 +13,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(httpHandler).addPathPatterns("/**");
+        registry.addInterceptor(httpHandler).addPathPatterns("/events/**");
     }
 }

@@ -1,14 +1,12 @@
 package ru.practicum.ewm.domain;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.enums.EventStateEnum;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -16,6 +14,7 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "events", schema = "public")
+@ToString(exclude = {"confirmedRequests", "category", "initiator"}, callSuper = false)
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +24,8 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "category_id")
     Category category;
-    @Column(name = "confirmedRequests")
-    int confirmedRequests;
+    @OneToMany(mappedBy = "event")
+    List<ParticipationRequest> confirmedRequests;
     @Column(name = "createdOn")
     LocalDateTime createdOn;
     @Column(name = "description", columnDefinition = "TEXT")
@@ -42,7 +41,7 @@ public class Event {
     @Column(name = "paid")
     boolean paid;
     @Column(name = "participantLimit")
-    int participantLimit;
+    Integer participantLimit;
     @Column(name = "publishedOn")
     LocalDateTime publishedOn;
     @Column(name = "requestModeration")
@@ -52,10 +51,7 @@ public class Event {
     EventStateEnum state = EventStateEnum.PENDING;
     @Column(name = "title")
     String title;
-    @Column(name = "views")
-    int views;
 
-    @ManyToOne
-    @JoinColumn(name = "compilation_id")
-    Compilation compilation;
+//    @ManyToMany(mappedBy = "events")
+//    Set<Compilation> compilation = new LinkedHashSet<>();
 }

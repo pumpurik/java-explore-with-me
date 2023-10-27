@@ -2,8 +2,10 @@ package ru.practicum.ewm.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.practicum.ewm.domain.Event;
 import ru.practicum.ewm.domain.User;
 import ru.practicum.ewm.enums.EventStateEnum;
@@ -24,35 +26,70 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT e FROM Event e " +
             "WHERE e.state = 'PUBLISHED' " +
             "AND (LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%')) ) " +
-            "AND ((:categories IS NULL) OR (e.category.id IN :categories)) " +
-            "AND ((:paid IS NULL) OR (e.paid = :paid)) " +
-            "AND ((cast(:rangeStart as date) IS NULL OR cast(:rangeEnd as date) IS NULL) OR " +
-            "(e.eventDate BETWEEN cast(:rangeStart as date) AND cast(:rangeEnd as date)))")
+            "OR (:categories IS NULL OR e.category.id IN :categories) " +
+            "OR ((:paid IS NULL) OR (e.paid = :paid)) " +
+            "OR ((cast(:rangeStart as date) IS NULL OR cast(:rangeEnd as date) IS NULL) OR " +
+            "(e.eventDate BETWEEN cast(:rangeStart as timestamp) AND cast(:rangeEnd as timestamp)))")
     List<Event> findAllByPublic(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
                                 LocalDateTime rangeEnd);
 
-    //    @Query("SELECT e FROM Event e " +
-//            "WHERE e.state = 'PUBLISHED' " +
-//            "AND (LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%')) ) " +
-//            "AND ((:categories IS NULL) OR (e.category.id IN :categories)) " +
-//            "AND ((:paid IS NULL) OR (e.paid = :paid)) " +
-//            "AND ((cast(:rangeStart as date) IS NULL OR cast(:rangeEnd as date) IS NULL) OR " +
-//            "(e.eventDate BETWEEN cast(:rangeStart as date) AND cast(:rangeEnd as date))) LIMIT :size OFFSET :from")
-//    List<Event> findAllByPublic(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-//                                LocalDateTime rangeEnd, Integer from, Integer size);
+    @Query("SELECT e FROM Event e " +
+            "WHERE e.state = 'PUBLISHED' " +
+            "AND (LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%')) ) " +
+            "OR (:categories IS NULL OR e.category.id IN :categories) " +
+            "OR (:paid IS NULL OR e.paid = :paid) " +
+            "OR ((cast(:rangeStart as date) IS NULL OR cast(:rangeEnd as date) IS NULL) OR " +
+            "(e.eventDate BETWEEN cast(:rangeStart as timestamp) AND cast(:rangeEnd as timestamp)))")
+    List<Event> findAllByPublic(
+            @Param("text") String text,
+            @Param("categories") List<Long> categories,
+            @Param("paid") Boolean paid,
+            @Param("rangeStart") LocalDateTime rangeStart,
+            @Param("rangeEnd") LocalDateTime rangeEnd,
+            Sort sort);
+
+    @Query("SELECT e FROM Event e WHERE " +
+            "(LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%')) ) " +
+            "AND (COALESCE(:categories, NULL) IS NULL OR e.category.id IN :categories) " +
+            "AND (COALESCE(:paid, NULL) IS NULL OR e.paid = :paid) " +
+            "AND (COALESCE(:rangeStart, NULL) IS NULL OR COALESCE(:rangeEnd, NULL) IS NULL OR " +
+            "(e.eventDate BETWEEN cast(:rangeStart as date) AND cast(:rangeEnd as date)))")
+    Page<Event> findAllByPublic(
+            @Param("text") String text,
+            @Param("categories") List<Long> categories,
+            @Param("paid") Boolean paid,
+            @Param("rangeStart") LocalDateTime rangeStart,
+            @Param("rangeEnd") LocalDateTime rangeEnd,
+            Pageable pageable);
+
+    @Query("SELECT e FROM Event e " +
+            "WHERE e.state = 'PUBLISHED' " +
+            "AND (LOWER(e.annotation) LIKE LOWER(CONCAT('%', COALESCE(:text, ''), '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', COALESCE(:text, ''), '%')) ) " +
+            "AND (COALESCE(:categories, :emptyList) = :emptyList OR e.category.id IN :categories) " +
+            "AND (COALESCE(:paid, false) = false OR e.paid = :paid) " +
+            "AND ((COALESCE(:rangeStart, '') = '' OR COALESCE(:rangeEnd, '') = '') OR (e.eventDate BETWEEN cast(:rangeStart as date) AND cast(:rangeEnd as date)))")
+    Page<Event> findAllByPublicOnlyAvailable(
+            @Param("text") String text,
+            @Param("categories") List<Long> categories,
+            @Param("paid") Boolean paid,
+            @Param("rangeStart") LocalDateTime rangeStart,
+            @Param("rangeEnd") LocalDateTime rangeEnd,
+            @Param("emptyList") List<Long> emptyList,
+            Pageable pageable);
+
     Page<Event> findByStateAndCategoryIdInAndPaidAndEventDateBetweenAndAnnotationContainingOrDescriptionContaining(
             EventStateEnum state, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, String text, String textDescription, Pageable pageable
     );
 
     @Query("SELECT e FROM Event e " +
-            "WHERE (COALESCE(:states, e.state) = e.state) " +
-            "AND (COALESCE(:users, e.initiator.id) = e.initiator.id) " +
+            "WHERE (:states IS NULL OR e.state IN :states) " +
+            "AND ( :users IS NULL OR e.initiator.id IN :users) " +
             "AND ((:categories IS NULL) OR (e.category.id IN :categories)) " +
-            "AND ((:rangeStart IS NULL OR :rangeEnd IS NULL) OR " +
-            "(e.eventDate BETWEEN cast(:rangeStart as date) AND cast(:rangeEnd as date)))"
+            "AND ((cast(:rangeStart as date) IS NULL OR cast(:rangeEnd as date) IS NULL) OR " +
+            "(e.eventDate BETWEEN cast(:rangeStart as timestamp) AND cast(:rangeEnd as timestamp)))"
     )
-    List<Event> findAllByAdmin(List<Long> users, List<String> states, List<Long> categories, LocalDateTime rangeStart,
-                               LocalDateTime rangeEnd);
+    List<Event> findAllByAdmin(List<Long> users, List<EventStateEnum> states, List<Long> categories, LocalDateTime rangeStart,
+                               LocalDateTime rangeEnd, Pageable pageable);
 
     Page<Event> findAllByStateInAndInitiatorIdInAndCategoryIdInAndEventDateBetween(
             List<EventStateEnum> states, List<Long> users, List<Long> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable

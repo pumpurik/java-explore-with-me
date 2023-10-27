@@ -23,7 +23,7 @@ public class EventFullDto {
     String annotation;
     @NotNull
     CategoryDto category;
-    int confirmedRequests;
+    Integer confirmedRequests;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime createdOn;
     String description;

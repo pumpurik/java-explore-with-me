@@ -27,11 +27,18 @@ public class StatsController {
     }
 
     @GetMapping(path = "/stats")
-    public ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam("start") @DateTimeFormat(pattern = PATTERN) LocalDateTime start,
-                                                       @RequestParam("end") @DateTimeFormat(pattern = PATTERN) LocalDateTime end,
+    public ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = PATTERN) LocalDateTime start,
+                                                       @RequestParam(value = "end", required = false) @DateTimeFormat(pattern = PATTERN) LocalDateTime end,
                                                        @RequestParam(value = "uris", required = false) String[] uris,
                                                        @RequestParam(value = "unique", required = false, defaultValue = "false") Boolean unique
     ) {
         return new ResponseEntity<>(statsService.getStats(start, end, uris == null ? Collections.emptyList() : Arrays.asList(uris), unique), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/stats/{app}")
+    public ResponseEntity<Integer> getStats(@PathVariable(value = "app") String app, @RequestParam String url,
+                                            @RequestParam(value = "unique", required = false, defaultValue = "false") Boolean unique
+    ) {
+        return new ResponseEntity<>(statsService.getStatsByAppUrl(app, url, unique), HttpStatus.OK);
     }
 }

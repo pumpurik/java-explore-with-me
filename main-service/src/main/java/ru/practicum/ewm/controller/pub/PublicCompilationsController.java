@@ -1,12 +1,10 @@
 package ru.practicum.ewm.controller.pub;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.client.stats.StatsClient;
 import ru.practicum.ewm.dto.compilation.CompilationDto;
 import ru.practicum.ewm.exception.NotFoundException;
@@ -22,8 +20,9 @@ public class PublicCompilationsController {
     private final StatsClient statsClient;
 
     @GetMapping
-    public ResponseEntity<List<CompilationDto>> getCompilations() {
-        return new ResponseEntity<>(compilationService.getCompilations(), HttpStatus.OK);
+    public ResponseEntity<List<CompilationDto>> getCompilations(@RequestParam(required = false, defaultValue = "0") Integer from,
+                                                                @RequestParam(required = false, defaultValue = "10") Integer size) {
+        return new ResponseEntity<>(compilationService.getCompilations(PageRequest.of(from, size)), HttpStatus.OK);
     }
 
     @GetMapping("/{compId}")

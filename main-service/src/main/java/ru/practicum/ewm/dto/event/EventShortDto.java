@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -17,11 +18,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventShortDto {
+    @NotBlank
+    String description;
     @NotNull
     String annotation;
     @NotNull
     CategoryDto category;
-    int confirmedRequests;
+    Integer confirmedRequests;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @NotNull
     LocalDateTime eventDate;

@@ -2,6 +2,7 @@ package ru.practicum.ewm.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.domain.Compilation;
 import ru.practicum.ewm.domain.Event;
@@ -18,6 +19,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.practicum.ewm.urils.NullUtils.getOrDefault;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -28,8 +31,9 @@ public class CompilationServiceImpl implements CompilationService {
 
 
     @Override
-    public List<CompilationDto> getCompilations() {
-        return compilationRepository.findAll().stream().map(compilationMapping::compilationToDto).collect(Collectors.toList());
+    public List<CompilationDto> getCompilations(PageRequest pageRequest) {
+        return compilationRepository.findAll(pageRequest).stream()
+                .map(compilationMapping::compilationToDto).collect(Collectors.toList());
     }
 
     @Override
@@ -43,11 +47,11 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
         List<Event> byIdIn = Collections.emptyList();
         if (newCompilationDto != null) {
-            byIdIn = eventRepository.findByIdIn(newCompilationDto.getEvents());
+            byIdIn = eventRepository.findByIdIn(newCompilationDto.getEvents() == null ? Collections.emptyList() : newCompilationDto.getEvents());
         }
 
         return compilationMapping.compilationToDto(compilationRepository.save(compilationMapping.updateCompilationRequestToCompilation(newCompilationDto,
-                byIdIn.isEmpty() ? null : byIdIn)));
+                byIdIn.isEmpty() ? Collections.emptyList() : byIdIn)));
     }
 
     @Override
@@ -62,9 +66,11 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> {
             return new NotFoundException();
         });
-        compilation.setPinned(updateCompilationRequest.isPinned());
-        compilation.setTitle(updateCompilationRequest.getTitle());
-        compilation.setEvents(eventRepository.findByIdIn(updateCompilationRequest.getEvents()));
+        if (updateCompilationRequest != null) {
+            compilation.setPinned(getOrDefault(updateCompilationRequest::isPinned, compilation.isPinned()));
+            compilation.setTitle(getOrDefault(updateCompilationRequest::getTitle, compilation.getTitle()));
+            compilation.getEvents().addAll(eventRepository.findByIdIn(updateCompilationRequest.getEvents() == null ? Collections.emptyList() : updateCompilationRequest.getEvents()));
+        }
         return compilationMapping.compilationToDto(compilationRepository.save(compilation));
     }
 }

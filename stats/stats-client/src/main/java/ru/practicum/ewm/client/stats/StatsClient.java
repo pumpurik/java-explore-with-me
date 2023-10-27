@@ -31,11 +31,19 @@ public class StatsClient {
         return rest.exchange(path, HttpMethod.GET, requestEntity, Object.class, parameters);
     }
 
+    public ResponseEntity<Integer> getStarts(String path, String url, boolean unique) {
+        HttpEntity<?> requestEntity = new HttpEntity<>(null, defaultHeaders());
+        Map<String, Object> parameters = Map.of(
+                "url", url,
+                "unique", unique
+        );
+        return rest.exchange(path + "?url={url}&unique={unique}", HttpMethod.GET, requestEntity, Integer.class, parameters);
+    }
 
-    public ResponseEntity<Object> addStat(EndpointHitDto endpointHitDto) {
+    public ResponseEntity<Object> addStat(String path, EndpointHitDto endpointHitDto) {
         HttpEntity<?> requestEntity = new HttpEntity<>(endpointHitDto, defaultHeaders());
         try {
-            return rest.exchange(endpointHitDto.getUri(), HttpMethod.POST, requestEntity, Object.class);
+            return rest.exchange(path, HttpMethod.POST, requestEntity, Object.class);
         } catch (Exception e) {
             return null;
         }

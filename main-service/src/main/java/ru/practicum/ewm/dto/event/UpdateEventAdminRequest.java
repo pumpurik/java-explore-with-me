@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.dto.LocationDto;
 import ru.practicum.ewm.enums.StateActionEnum;
 
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
@@ -16,12 +17,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+//@JsonIgnoreProperties(ignoreUnknown = true)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdateEventAdminRequest {
-    @Size(min = 19, max = 2000)
+    @Size(min = 20, max = 2000)
     String annotation;
     Long category;
-    @Size(min = 19, max = 7000)
+    @Size(min = 20, max = 7000)
     String description;
+    @FutureOrPresent
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime eventDate;
     LocationDto locationDto;
@@ -29,7 +33,7 @@ public class UpdateEventAdminRequest {
     Integer participantLimit;
     Boolean requestModeration;
     StateActionEnum stateAction;
-    @Size(min = 2, max = 120)
+    @Size(min = 3, max = 120)
     String title;
 
 }

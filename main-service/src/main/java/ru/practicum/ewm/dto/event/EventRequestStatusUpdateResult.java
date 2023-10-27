@@ -7,11 +7,13 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.ewm.dto.ParticipationRequestDto;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventRequestStatusUpdateResult {
-    ParticipationRequestDto confirmedRequests;
-    ParticipationRequestDto rejectedRequests;
+    List<ParticipationRequestDto> confirmedRequests;
+    List<ParticipationRequestDto> rejectedRequests;
 }

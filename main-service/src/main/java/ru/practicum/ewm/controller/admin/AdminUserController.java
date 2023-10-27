@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.client.stats.StatsClient;
 import ru.practicum.ewm.dto.user.NewUserRequest;
 import ru.practicum.ewm.dto.user.UserDto;
+import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.service.UserService;
 
@@ -33,7 +34,7 @@ public class AdminUserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody NewUserRequest newUserRequest) {
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody NewUserRequest newUserRequest) throws ConflictException {
         return new ResponseEntity<>(userService.createUser(newUserRequest), HttpStatus.CREATED);
     }
 

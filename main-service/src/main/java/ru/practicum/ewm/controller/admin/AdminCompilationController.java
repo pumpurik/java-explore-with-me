@@ -28,11 +28,11 @@ public class AdminCompilationController {
     @DeleteMapping("/{compId}")
     public ResponseEntity<Void> deleteCompilation(@PathVariable Long compId) throws NotFoundException {
         compilationService.deleteCompilation(compId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping("/{compId}")
-    public ResponseEntity<CompilationDto> updateCompilation(@PathVariable Long compId, @RequestBody UpdateCompilationRequest updateCompilationRequest) throws NotFoundException {
+    public ResponseEntity<CompilationDto> updateCompilation(@PathVariable Long compId, @Valid @RequestBody(required = false) UpdateCompilationRequest updateCompilationRequest) throws NotFoundException {
         return new ResponseEntity<>(compilationService.updateCompilation(compId, updateCompilationRequest), HttpStatus.OK);
     }
 }
