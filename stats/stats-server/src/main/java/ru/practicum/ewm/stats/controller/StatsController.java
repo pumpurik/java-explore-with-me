@@ -9,6 +9,7 @@ import ru.practicum.ewm.dto.stats.EndpointHitDto;
 import ru.practicum.ewm.dto.stats.ViewStatsDto;
 import ru.practicum.ewm.stats.service.StatsService;
 
+import javax.validation.constraints.FutureOrPresent;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,8 +28,8 @@ public class StatsController {
     }
 
     @GetMapping(path = "/stats")
-    public ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = PATTERN) LocalDateTime start,
-                                                       @RequestParam(value = "end", required = false) @DateTimeFormat(pattern = PATTERN) LocalDateTime end,
+    public ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam(value = "start") @DateTimeFormat(pattern = PATTERN) LocalDateTime start,
+                                                       @RequestParam(value = "end") @FutureOrPresent @DateTimeFormat(pattern = PATTERN) LocalDateTime end,
                                                        @RequestParam(value = "uris", required = false) String[] uris,
                                                        @RequestParam(value = "unique", required = false, defaultValue = "false") Boolean unique
     ) {
