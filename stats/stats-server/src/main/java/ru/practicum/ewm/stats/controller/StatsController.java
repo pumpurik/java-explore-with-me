@@ -9,7 +9,6 @@ import ru.practicum.ewm.dto.stats.EndpointHitDto;
 import ru.practicum.ewm.dto.stats.ViewStatsDto;
 import ru.practicum.ewm.stats.service.StatsService;
 
-import javax.validation.constraints.FutureOrPresent;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,10 +28,13 @@ public class StatsController {
 
     @GetMapping(path = "/stats")
     public ResponseEntity<List<ViewStatsDto>> getStats(@RequestParam(value = "start") @DateTimeFormat(pattern = PATTERN) LocalDateTime start,
-                                                       @RequestParam(value = "end") @FutureOrPresent @DateTimeFormat(pattern = PATTERN) LocalDateTime end,
+                                                       @RequestParam(value = "end") @DateTimeFormat(pattern = PATTERN) LocalDateTime end,
                                                        @RequestParam(value = "uris", required = false) String[] uris,
                                                        @RequestParam(value = "unique", required = false, defaultValue = "false") Boolean unique
     ) {
+        if (start.isAfter(end)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(statsService.getStats(start, end, uris == null ? Collections.emptyList() : Arrays.asList(uris), unique), HttpStatus.OK);
     }
 
