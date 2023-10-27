@@ -10,4 +10,6 @@ public interface StatsService {
     void createHit(EndpointHitDto endpointHitDto);
 
     List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique);
+
+    Integer getStatsByAppUrl(String app, String url, boolean unique);
 }

@@ -1,6 +1,5 @@
 package ru.practicum.ewm.client.stats;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -8,11 +7,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.ewm.dto.stats.EndpointHitDto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@RequiredArgsConstructor
 public class StatsClient {
     private final RestTemplate rest;
 
@@ -23,7 +20,7 @@ public class StatsClient {
                 .build();
     }
 
-    ResponseEntity<Object> getStarts(String path, String start, String end, List<String> uris, boolean unique) {
+    public ResponseEntity<Object> getStarts(String path, String start, String end, List<String> uris, boolean unique) {
         HttpEntity<?> requestEntity = new HttpEntity<>(null, defaultHeaders());
         Map<String, Object> parameters = Map.of(
                 "start", start,
@@ -34,10 +31,22 @@ public class StatsClient {
         return rest.exchange(path, HttpMethod.GET, requestEntity, Object.class, parameters);
     }
 
+    public ResponseEntity<Integer> getStarts(String path, String url, boolean unique) {
+        HttpEntity<?> requestEntity = new HttpEntity<>(null, defaultHeaders());
+        Map<String, Object> parameters = Map.of(
+                "url", url,
+                "unique", unique
+        );
+        return rest.exchange(path + "?url={url}&unique={unique}", HttpMethod.GET, requestEntity, Integer.class, parameters);
+    }
 
-    ResponseEntity<Object> addStat(String path, String app, String uri, String ip, LocalDateTime timestamp) {
-        HttpEntity<?> requestEntity = new HttpEntity<>(new EndpointHitDto(app, uri, ip, timestamp), defaultHeaders());
-        return rest.exchange(path, HttpMethod.POST, requestEntity, Object.class);
+    public ResponseEntity<Object> addStat(String path, EndpointHitDto endpointHitDto) {
+        HttpEntity<?> requestEntity = new HttpEntity<>(endpointHitDto, defaultHeaders());
+        try {
+            return rest.exchange(path, HttpMethod.POST, requestEntity, Object.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private HttpHeaders defaultHeaders() {

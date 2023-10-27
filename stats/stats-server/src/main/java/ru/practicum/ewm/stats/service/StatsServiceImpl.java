@@ -33,4 +33,10 @@ public class StatsServiceImpl implements StatsService {
         }
         return statsUnique.stream().map(ViewStatsMapping::toViewStatsDto).collect(Collectors.toList());
     }
+
+    @Override
+    public Integer getStatsByAppUrl(String app, String url, boolean unique) {
+        return unique ? endpointHitRepository.findStatsUnique(url, app) :
+                endpointHitRepository.findStatsNotUnique(url, app);
+    }
 }

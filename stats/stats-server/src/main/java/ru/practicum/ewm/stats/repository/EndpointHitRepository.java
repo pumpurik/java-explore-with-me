@@ -27,4 +27,13 @@ public interface EndpointHitRepository extends JpaRepository<EndpointHit, Long> 
     @Query("SELECT new ru.practicum.ewm.stats.domain.ViewStats(a.app, a.uri, COUNT(*) as hits) FROM EndpointHit as a " +
             "WHERE a.timestamp BETWEEN :start AND :end GROUP BY a.app, a.uri ORDER BY hits DESC")
     List<ViewStats> findStatsNotUnique(LocalDateTime start, LocalDateTime end);
+
+    @Query("SELECT  COUNT(*)  FROM EndpointHit as a " +
+            "WHERE a.uri = :url AND a.app = :app")
+    Integer findStatsNotUnique(String url, String app);
+
+    @Query("SELECT COUNT(distinct a.ip) FROM EndpointHit as a " +
+            "WHERE a.uri = :url AND a.app = :app")
+    Integer findStatsUnique(String url, String app);
+
 }
