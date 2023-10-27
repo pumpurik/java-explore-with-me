@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.EventShortDto;
+import ru.practicum.ewm.enums.EventStateEnum;
 import ru.practicum.ewm.enums.SortEnum;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.repository.EventRepository;
@@ -58,11 +59,10 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     @Override
     public EventFullDto getEvent(Long id) throws NotFoundException {
-        EventFullDto eventFullDto = eventMapping.eventToEventFullDto(eventRepository.findById(id).orElseThrow(() -> {
+        return eventMapping.eventToEventFullDto(eventRepository.findByIdAndState(id, EventStateEnum.PUBLISHED).orElseThrow(() -> {
             log.info("Событие с айди {} не найдено!", id);
             return new NotFoundException(String.format("Событие не найдено c айди %s не найдено!", id));
         }));
-        return eventFullDto;
     }
 
     private String convertSortProperty(SortEnum sortEnum) {

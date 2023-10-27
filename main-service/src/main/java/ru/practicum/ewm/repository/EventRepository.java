@@ -86,4 +86,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findAllByAdmin(List<Long> users, List<EventStateEnum> states, List<Long> categories, LocalDateTime rangeStart,
                                LocalDateTime rangeEnd, @Param("emptyList") List<Long> emptyList, Pageable pageable);
 
+    Optional<Event> findByIdAndState(Long id, EventStateEnum state);
+
 }
