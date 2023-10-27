@@ -39,7 +39,8 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationDto getCompilation(Long compId) throws NotFoundException {
         return compilationMapping.compilationToDto(compilationRepository.findById(compId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Подборка событий c айди {} не найдена!", compId);
+            return new NotFoundException(String.format("Подборка событий c айди %s не найдена!", compId));
         }));
     }
 
@@ -57,14 +58,16 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public void deleteCompilation(Long compId) throws NotFoundException {
         compilationRepository.delete(compilationRepository.findById(compId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Подборка событий c айди {} не найдена!", compId);
+            return new NotFoundException(String.format("Подборка событий c айди %s не найдена!", compId));
         }));
     }
 
     @Override
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateCompilationRequest) throws NotFoundException {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Подборка событий c айди {} не найдена!", compId);
+            return new NotFoundException(String.format("Подборка событий c айди %s не найдена!", compId));
         });
         if (updateCompilationRequest != null) {
             compilation.setPinned(getOrDefault(updateCompilationRequest::isPinned, compilation.isPinned()));

@@ -52,14 +52,15 @@ public class PublicEventServiceImpl implements PublicEventService {
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList());
 
         }
-        if (eventShortDtos.isEmpty()) throw new NotFoundException();
+        if (eventShortDtos.isEmpty()) throw new NotFoundException("По заданным фильтрам не найдено ни одного события!");
         return eventShortDtos;
     }
 
     @Override
     public EventFullDto getEvent(Long id) throws NotFoundException {
         EventFullDto eventFullDto = eventMapping.eventToEventFullDto(eventRepository.findById(id).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Событие с айди {} не найдено!", id);
+            return new NotFoundException(String.format("Событие не найдено c айди %s не найдено!", id));
         }));
         return eventFullDto;
     }

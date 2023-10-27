@@ -45,29 +45,36 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     @Transactional
     public ParticipationRequestDto createRequestParticipation(Long userId, Long eventId) throws NotFoundException, ConflictException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Пользователь c айди {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         });
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Событие c айди {} не найдено!", eventId);
+            return new NotFoundException(String.format("Событие c айди %s не найдено!", eventId));
         });
         ParticipationRequestStatusEnum confirmed = ParticipationRequestStatusEnum.CONFIRMED;
         if (event.getInitiator().equals(user)) {
-            throw new ConflictException();
+            log.info("Инициатор события {} не может добавить запрос на участие в своём событии!", user);
+            throw new ConflictException(String.format("Инициатор события %s не может добавить запрос на участие в своём событии!", user));
         }
         if (event.getParticipantLimit() != 0 && event.getParticipantLimit() <= event.getConfirmedRequests().stream()
                 .filter(s -> s.getStatus().equals(ParticipationRequestStatusEnum.CONFIRMED))
                 .count()) {
-            throw new ConflictException();
+            log.info("У события {} достигнут лимит запросов на участие!", event);
+            throw new ConflictException(String.format("У события %s достигнут лимит запросов на участие!", event));
         }
         if (participationRequestRepository.findByEventAndRequester(event, user).isPresent()) {
-            throw new ConflictException();
+            log.info("Нельзя добавить повторный запрос от пользователя {} на событие {}!", event, user);
+            throw new ConflictException("Нельзя добавить повторный запрос!");
         }
         if (!event.getState().equals(EventStateEnum.PUBLISHED)) {
-            throw new ConflictException();
+            log.info("Событие {} не опубликовано!", event);
+            throw new ConflictException(String.format("Нельзя участвовать в неопубликованном событии %s!", event));
         }
         if (event.isRequestModeration()) {
             if (event.getInitiator().equals(user)) {
-                throw new ConflictException();
+                log.info("Инициатор события {} не может добавить запрос на участие в своём событии!", user);
+                throw new ConflictException(String.format("Инициатор события %s не может добавить запрос на участие в своём событии!", user));
             }
             confirmed = event.getParticipantLimit() == 0 ? ParticipationRequestStatusEnum.CONFIRMED : ParticipationRequestStatusEnum.PENDING;
         }
@@ -80,11 +87,13 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     @Override
     public ParticipationRequestDto cancelRequestParticipation(Long userId, Long requestId) throws NotFoundException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Пользователь c айди {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         });
 
         ParticipationRequest participationRequest = participationRequestRepository.findById(requestId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Запрос c айди {} не найден!", requestId);
+            return new NotFoundException(String.format("Запрос c айди %s не найден!", requestId));
         });
         participationRequest.setStatus(ParticipationRequestStatusEnum.CANCELED);
         return participationRequestMapping.participationRequestToDto(participationRequestRepository.save(participationRequest));
@@ -98,8 +107,14 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     @Override
     public EventRequestStatusUpdateResult updateEventUserRequest(Long userId, Long eventId, EventRequestStatusUpdateRequest requestUpdate) throws NotFoundException, ConflictException {
-        User user = userRepository.findById(userId).orElseThrow(NotFoundException::new);
-        Event event = eventRepository.findById(eventId).orElseThrow(NotFoundException::new);
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            log.info("Пользователь c айди {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
+        });
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> {
+            log.info("Событие c айди {} не найдено!", eventId);
+            return new NotFoundException(String.format("Событие c айди %s не найдено!", eventId));
+        });
 
         List<ParticipationRequest> byIdIn = requestUpdate == null ?
                 participationRequestRepository.findByEventId(eventId) :
@@ -118,10 +133,12 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         for (ParticipationRequest request : byIdIn) {
             if (request.getEvent().isRequestModeration() && request.getEvent().getParticipantLimit() != 0) {
                 if (count >= request.getEvent().getParticipantLimit()) {
-                    throw new ConflictException();
+                    log.info("Достигнут лимит {} по заявкам на событие {}!", request.getEvent().getParticipantLimit(), request.getEvent());
+                    throw new ConflictException("Достигнут лимит по заявкам на данное событие!");
                 }
                 if (!request.getStatus().equals(ParticipationRequestStatusEnum.PENDING)) {
-                    throw new ConflictException();
+                    log.info("Cтатус можно изменить только у заявок, находящихся в состоянии ожидания! {}", request);
+                    throw new ConflictException("Cтатус можно изменить только у заявок, находящихся в состоянии ожидания!");
                 }
                 request.setStatus(statusEnum);
             } else {

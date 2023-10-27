@@ -22,7 +22,6 @@ import ru.practicum.ewm.service.PrivateEventService;
 import ru.practicum.ewm.service.mapping.EventMapping;
 import ru.practicum.ewm.service.mapping.LocationMapping;
 
-import java.nio.channels.NotYetBoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +43,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     @Override
     public List<EventShortDto> getEventsUser(Long userId, PageRequest pageRequest) throws NotFoundException {
         return eventRepository.findByInitiator(userRepository.findById(userId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("События пользователя с айди {} не найдены!", userId);
+            return new NotFoundException(String.format("События пользователя с айди %s не найдены!", userId));
         }), pageRequest).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList());
 
     }
@@ -53,10 +53,12 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     public EventFullDto addNewEvent(Long userId, NewEventDto newEventDto) throws NotFoundException, ConflictException {
         dateValid(newEventDto.getEventDate());
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Пользователь c айди {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         });
         Category category = categoryRepository.findById(newEventDto.getCategory()).orElseThrow(() -> {
-            return new NotYetBoundException();
+            log.info("Категория с айди {} не найдена!", newEventDto.getCategory());
+            return new NotFoundException(String.format("Категория с айди %s не найдена!", newEventDto.getCategory()));
         });
         Event event = eventMapping.newCategoryDtoToCategory(newEventDto, category);
         event.setInitiator(user);
@@ -69,11 +71,13 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     @Override
     public EventFullDto getEventUser(Long userId, Long eventId) throws NotFoundException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Пользователь c айди {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         });
 
         return eventMapping.eventToEventFullDto(eventRepository.findByInitiatorAndId(user, eventId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Событие c айди {} и инициатором {} не найдено!", eventId, user);
+            return new NotFoundException(String.format("Событие c айди %s и инициатором %s не найдено!", eventId, user));
         }));
     }
 
@@ -81,12 +85,16 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     @Transactional
     public EventFullDto updateEventUser(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) throws NotFoundException, ConflictException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Пользователь c айди {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         });
         Optional<Event> byInitiatorAndId = eventRepository.findByInitiatorAndId(user, eventId);
         if (byInitiatorAndId.isPresent()) {
             dateValid(byInitiatorAndId.get().getEventDate());
-            if (byInitiatorAndId.get().getState().equals(EventStateEnum.PUBLISHED)) throw new ConflictException();
+            if (byInitiatorAndId.get().getState().equals(EventStateEnum.PUBLISHED)) {
+                log.info("Неверный статус события {}!", byInitiatorAndId.get().getState());
+                throw new ConflictException("Изменить можно только отмененные события или события в состоянии ожидания модерации!");
+            }
             Category category = null;
             if (updateEventUserRequest != null) {
                 if (updateEventUserRequest.getCategory() != null) {
@@ -105,7 +113,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     private void dateValid(LocalDateTime eventDate) throws ConflictException {
         if (!eventDate.isAfter(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException();
+            log.info("Неверные дата и время {} события!", eventDate);
+            throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента!");
         }
     }
 

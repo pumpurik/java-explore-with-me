@@ -33,8 +33,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto getCategory(Long catId) throws NotFoundException {
         return categoryMapping.categoryToCategoryDto(categoryRepository.findById(catId).orElseThrow(() -> {
-            log.info("", catId);
-            return new NotFoundException(String.format("", catId));
+            log.info("Категория c айди {} не найдена!", catId);
+            return new NotFoundException(String.format("Категория c айди %s не найдена!", catId));
         }));
     }
 
@@ -43,17 +43,19 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             return categoryMapping.categoryToCategoryDto(categoryRepository.save(categoryMapping.newCategoryDtoToCategory(newCategoryDto)));
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException();
+            log.info("Категория имеет неуникальное имя {}!", newCategoryDto.getName());
+            throw new ConflictException(String.format("Категория имеет неуникальное имя %s!", newCategoryDto.getName()));
         }
     }
 
     @Override
     public void deleteCategory(Long catId) throws NotFoundException, ConflictException {
         Category category = categoryRepository.findById(catId).orElseThrow(() -> {
-            log.info("", catId);
-            return new NotFoundException(String.format("", catId));
+            log.info("Категории с айди {} не существует!", catId);
+            return new NotFoundException(String.format("Категории с айди %s не существует!", catId));
         });
-        if (!category.getEvents().isEmpty()) throw new ConflictException();
+        if (!category.getEvents().isEmpty())
+            throw new ConflictException("C категорией не должно быть связано ни одного события!");
         categoryRepository.delete(category);
 
     }
@@ -61,14 +63,15 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto updateCategory(Long catId, NewCategoryDto newCategoryDto) throws NotFoundException, ConflictException {
         Category category = categoryRepository.findById(catId).orElseThrow(() -> {
-            log.info("", catId);
-            return new NotFoundException(String.format("", catId));
+            log.info("Категория с айди {} не найдена!", catId);
+            return new NotFoundException(String.format("Категория с айди %s не найдена!", catId));
         });
         category.setName(newCategoryDto.getName());
         try {
             return categoryMapping.categoryToCategoryDto(categoryRepository.save(category));
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException();
+            log.info("Категория имеет неуникальное имя {}!", newCategoryDto.getName());
+            throw new ConflictException(String.format("Категория имеет неуникальное имя %s!", newCategoryDto.getName()));
         }
     }
 }

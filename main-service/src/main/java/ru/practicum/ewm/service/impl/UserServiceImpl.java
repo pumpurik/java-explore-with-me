@@ -1,6 +1,7 @@
 package ru.practicum.ewm.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import ru.practicum.ewm.service.mapping.UserMapping;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
@@ -38,14 +40,16 @@ public class UserServiceImpl implements UserService {
         try {
             return userMapping.userToDto(userRepository.save(userMapping.newUserRequestToUser(newUserRequest)));
         } catch (DataIntegrityViolationException e) {
-            throw new ConflictException();
+            log.info("Пользователь с таким email {} уже существует!", newUserRequest.getEmail());
+            throw new ConflictException(String.format("Пользователь с таким email %s уже существует!", newUserRequest.getEmail()));
         }
     }
 
     @Override
     public void deleteUser(Long userId) throws NotFoundException {
         userRepository.delete(userRepository.findById(userId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Пользователь c айди {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         }));
     }
 }

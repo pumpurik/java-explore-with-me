@@ -20,6 +20,7 @@ import ru.practicum.ewm.service.mapping.EventMapping;
 import ru.practicum.ewm.service.mapping.LocationMapping;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,33 +40,34 @@ public class AdminEventServiceImpl implements AdminEventService {
     @Transactional(readOnly = true)
     public List<EventFullDto> getEvents(List<Long> users, List<EventStateEnum> states, List<Long> categories, LocalDateTime rangeStart,
                                         LocalDateTime rangeEnd, Integer from, Integer size) {
-        List<EventFullDto> eventFullDtos =
-                eventRepository
-                        .findAllByAdmin(users, states, categories,
-                                rangeStart, rangeEnd, PageRequest.of(from, size)).stream()
-                        .map(eventMapping::eventToEventFullDto).collect(Collectors.toList());
-//                eventRepository.findAllByAdmin(users, states, categories, rangeStart, rangeEnd).stream()
-//                        .map(eventMapping::eventToEventFullDto).collect(Collectors.toList());
-        return eventFullDtos;
+        if (rangeStart == null) rangeEnd = LocalDateTime.now();
+        return eventRepository
+                .findAllByAdmin(users, states, categories,
+                        rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size)).stream()
+                .map(eventMapping::eventToEventFullDto).collect(Collectors.toList());
     }
 
     @Override
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) throws NotFoundException, ConflictException {
         Category category = null;
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            return new NotFoundException();
+            log.info("Событие с айди {} не найдено!", eventId);
+            return new NotFoundException(String.format("Событие не найдено c айди %s не найдено!", eventId));
         });
         if (!event.getState().equals(EventStateEnum.PENDING) && equalsIgnoreNullFalse.apply(getOrDefault(() ->
                 updateEventAdminRequest.getStateAction().name(), StateActionEnum.PUBLISH_EVENT.name()), StateActionEnum.PUBLISH_EVENT.name())) {
-            throw new ConflictException();
+            log.info("Событие с айди {} можно публиковать, только если оно в состоянии ожидания публикации!", eventId);
+            throw new ConflictException(String.format("Событие с айди %s можно публиковать, только если оно в состоянии ожидания публикации!", eventId));
         }
         if (event.getState().equals(EventStateEnum.CANCELED) && equalsIgnoreNullFalse.apply(getOrDefault(() ->
                 updateEventAdminRequest.getStateAction().name(), StateActionEnum.PUBLISH_EVENT.name()), StateActionEnum.PUBLISH_EVENT.name())) {
-            throw new ConflictException();
+            log.info("Событие с айди {} можно принять, только если оно не отклонено!", eventId);
+            throw new ConflictException(String.format("Событие с айди %s можно принять, только если оно не отклонено!", eventId));
         }
         if (equalsIgnoreNullFalse.apply(getOrNull(() -> updateEventAdminRequest.getStateAction().name()), StateActionEnum.REJECT_EVENT.name()) &&
                 event.getState().equals(EventStateEnum.PUBLISHED)) {
-            throw new ConflictException();
+            log.info("Событие с айди {} можно отклонить, только если оно еще не опубликовано!", eventId);
+            throw new ConflictException(String.format("Событие с айди %s можно отклонить, только если оно еще не опубликовано!", eventId));
         }
         if (updateEventAdminRequest != null) {
             if (updateEventAdminRequest.getCategory() != null) {

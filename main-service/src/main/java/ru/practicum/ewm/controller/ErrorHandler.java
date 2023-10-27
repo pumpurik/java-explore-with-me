@@ -15,16 +15,17 @@ import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class ErrorHandler {
-    //    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    public ApiError handleThrowable(final Throwable e) {
-//        return new ApiError(
-//                e.getMessage(),
-//                "The required object was not found.",
-//                HttpStatus.NOT_FOUND,
-//                LocalDateTime.now()
-//        );
-//    }
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiError handleThrowable(final Throwable e) {
+        return new ApiError(
+                e.getMessage(),
+                "The required object was not found.",
+                HttpStatus.NOT_FOUND,
+                LocalDateTime.now()
+        );
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleNotFoundException(final NotFoundException e) {

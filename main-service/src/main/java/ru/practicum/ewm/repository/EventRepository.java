@@ -23,15 +23,15 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     List<Event> findByIdIn(List<Long> ids);
 
-    @Query("SELECT e FROM Event e " +
-            "WHERE e.state = 'PUBLISHED' " +
-            "AND (LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%')) ) " +
-            "OR (:categories IS NULL OR e.category.id IN :categories) " +
-            "OR ((:paid IS NULL) OR (e.paid = :paid)) " +
-            "OR ((cast(:rangeStart as date) IS NULL OR cast(:rangeEnd as date) IS NULL) OR " +
-            "(e.eventDate BETWEEN cast(:rangeStart as timestamp) AND cast(:rangeEnd as timestamp)))")
-    List<Event> findAllByPublic(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-                                LocalDateTime rangeEnd);
+//    @Query("SELECT e FROM Event e " +
+//            "WHERE e.state = 'PUBLISHED' " +
+//            "AND (LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%')) ) " +
+//            "OR (:categories IS NULL OR e.category.id IN :categories) " +
+//            "OR ((:paid IS NULL) OR (e.paid = :paid)) " +
+//            "OR ((cast(:rangeStart as date) IS NULL OR cast(:rangeEnd as date) IS NULL) OR " +
+//            "(e.eventDate BETWEEN cast(:rangeStart as timestamp) AND cast(:rangeEnd as timestamp)))")
+//    List<Event> findAllByPublic(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
+//                                LocalDateTime rangeEnd);
 
     @Query("SELECT e FROM Event e " +
             "WHERE e.state = 'PUBLISHED' " +
@@ -77,21 +77,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("emptyList") List<Long> emptyList,
             Pageable pageable);
 
-    Page<Event> findByStateAndCategoryIdInAndPaidAndEventDateBetweenAndAnnotationContainingOrDescriptionContaining(
-            EventStateEnum state, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, String text, String textDescription, Pageable pageable
-    );
-
     @Query("SELECT e FROM Event e " +
-            "WHERE (:states IS NULL OR e.state IN :states) " +
-            "AND ( :users IS NULL OR e.initiator.id IN :users) " +
-            "AND ((:categories IS NULL) OR (e.category.id IN :categories)) " +
-            "AND ((cast(:rangeStart as date) IS NULL OR cast(:rangeEnd as date) IS NULL) OR " +
-            "(e.eventDate BETWEEN cast(:rangeStart as timestamp) AND cast(:rangeEnd as timestamp)))"
+            "WHERE (COALESCE(:states, :emptyList) = :emptyList OR e.state IN :states) " +
+            "AND (COALESCE(:users, :emptyList) = :emptyList OR e.initiator.id IN :users) " +
+            "AND (COALESCE(:categories, :emptyList) = :emptyList OR e.category.id IN :categories) " +
+            "AND ((COALESCE(:rangeStart, '') = '' OR COALESCE(:rangeEnd, '') = '') OR (e.eventDate BETWEEN cast(:rangeStart as date) AND cast(:rangeEnd as date)))"
     )
     List<Event> findAllByAdmin(List<Long> users, List<EventStateEnum> states, List<Long> categories, LocalDateTime rangeStart,
-                               LocalDateTime rangeEnd, Pageable pageable);
+                               LocalDateTime rangeEnd, @Param("emptyList") List<Long> emptyList, Pageable pageable);
 
-    Page<Event> findAllByStateInAndInitiatorIdInAndCategoryIdInAndEventDateBetween(
-            List<EventStateEnum> states, List<Long> users, List<Long> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable
-    );
 }
