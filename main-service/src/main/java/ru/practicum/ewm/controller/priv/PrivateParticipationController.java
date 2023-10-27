@@ -16,17 +16,17 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/users/{userId}")
+@RequestMapping(path = "/users")
 public class PrivateParticipationController {
     private final ParticipationRequestService participationRequestService;
     private final StatsClient statsClient;
 
-    @GetMapping("/requests")
+    @GetMapping("/{userId}/requests")
     public ResponseEntity<List<ParticipationRequestDto>> getRequestParticipation(@PathVariable Long userId) {
         return new ResponseEntity<>(participationRequestService.getRequestParticipation(userId), HttpStatus.OK);
     }
 
-    @PostMapping("/requests")
+    @PostMapping("/{userId}/requests")
     public ResponseEntity<ParticipationRequestDto> createRequestParticipation(
             @PathVariable Long userId,
             @RequestParam Long eventId
@@ -34,7 +34,7 @@ public class PrivateParticipationController {
         return new ResponseEntity<>(participationRequestService.createRequestParticipation(userId, eventId), HttpStatus.CREATED);
     }
 
-    @PatchMapping("/requests/{requestId}/cancel")
+    @PatchMapping("/{userId}/requests/{requestId}/cancel")
     public ResponseEntity<ParticipationRequestDto> cancelRequestParticipation(
             @PathVariable Long userId,
             @PathVariable Long requestId
@@ -42,7 +42,7 @@ public class PrivateParticipationController {
         return new ResponseEntity<>(participationRequestService.cancelRequestParticipation(userId, requestId), HttpStatus.OK);
     }
 
-    @GetMapping("/events/{eventId}/requests")
+    @GetMapping("/{userId}/events/{eventId}/requests")
     public ResponseEntity<List<ParticipationRequestDto>> getEventUserRequest(
             @PathVariable Long userId,
             @PathVariable Long eventId
@@ -50,7 +50,7 @@ public class PrivateParticipationController {
         return new ResponseEntity<>(participationRequestService.getEventUserRequest(userId, eventId), HttpStatus.OK);
     }
 
-    @PatchMapping("/events/{eventId}/requests")
+    @PatchMapping("/{userId}/events/{eventId}/requests")
     public ResponseEntity<EventRequestStatusUpdateResult> updateEventUserRequest(
             @PathVariable Long userId,
             @PathVariable Long eventId,

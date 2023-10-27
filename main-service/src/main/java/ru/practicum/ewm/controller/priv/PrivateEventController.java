@@ -19,12 +19,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/users/{userId}/events")
+@RequestMapping(path = "/users")
 public class PrivateEventController {
     private final PrivateEventService eventService;
     private final StatsClient statsClient;
 
-    @GetMapping
+    @GetMapping("/{userId}/events")
     public ResponseEntity<List<EventShortDto>> getEventsUser(
             @PathVariable Long userId,
             @RequestParam(required = false, defaultValue = "0") Integer from,
@@ -33,7 +33,7 @@ public class PrivateEventController {
         return new ResponseEntity<>(eventService.getEventsUser(userId, PageRequest.of(from, size)), HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping("/{userId}/events")
     public ResponseEntity<EventFullDto> addNewEvent(
             @PathVariable Long userId,
             @RequestBody @Valid NewEventDto newEventDto
