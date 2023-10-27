@@ -31,8 +31,8 @@ public class PublicEventServiceImpl implements PublicEventService {
         if (rangeStart == null) rangeEnd = LocalDateTime.now();
         List<EventShortDto> eventShortDtos;
         if (sort != null) {
-            eventShortDtos = onlyAvailable ? eventRepository.
-                    findAllByPublicOnlyAvailable(
+            eventShortDtos = onlyAvailable ? eventRepository
+                    .findAllByPublicOnlyAvailable(
                             text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size,
                                     Sort.by(Sort.Order.desc(convertSortProperty(sort))))
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList()) :
@@ -43,8 +43,8 @@ public class PublicEventServiceImpl implements PublicEventService {
             ;
 
         } else {
-            eventShortDtos = onlyAvailable ? eventRepository.
-                    findAllByPublicOnlyAvailable(
+            eventShortDtos = onlyAvailable ? eventRepository
+                    .findAllByPublicOnlyAvailable(
                             text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size)
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList()) :
                     eventRepository.findAllByPublic(
