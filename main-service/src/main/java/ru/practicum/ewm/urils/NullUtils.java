@@ -4,11 +4,11 @@ import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 
 public class NullUtils {
-    public static BiFunction<String, String, Boolean> equalsIgnoreNullFalse = (f, s) -> {
+    public final static BiFunction<String, String, Boolean> equalsIgnoreNullFalse = (f, s) -> {
         if (f == null || s == null) return false;
         else return f.equals(s);
     };
-    public static BiFunction<String, String, Boolean> equalsIgnoreNullTrue = (f, s) -> {
+    public final static BiFunction<String, String, Boolean> equalsIgnoreNullTrue = (f, s) -> {
         if (f == null || s == null) return true;
         else return f.equals(s);
     };
