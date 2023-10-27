@@ -19,19 +19,20 @@ import javax.validation.Valid;
 public class AdminCompilationController {
     private final CompilationService compilationService;
     private final StatsClient statsClient;
+    private final String path = "/{compId}";
 
     @PostMapping
     public ResponseEntity<CompilationDto> createCompilation(@RequestBody(required = false) @Valid NewCompilationDto newCompilationDto) {
         return new ResponseEntity<>(compilationService.createCompilation(newCompilationDto), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{compId}")
+    @DeleteMapping(path)
     public ResponseEntity<Void> deleteCompilation(@PathVariable Long compId) throws NotFoundException {
         compilationService.deleteCompilation(compId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping("/{compId}")
+    @PatchMapping(path)
     public ResponseEntity<CompilationDto> updateCompilation(@PathVariable Long compId, @Valid @RequestBody(required = false) UpdateCompilationRequest updateCompilationRequest) throws NotFoundException {
         return new ResponseEntity<>(compilationService.updateCompilation(compId, updateCompilationRequest), HttpStatus.OK);
     }

@@ -70,8 +70,8 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             return categoryMapping.categoryToCategoryDto(categoryRepository.save(category));
         } catch (DataIntegrityViolationException e) {
-            log.info("Категория имеет неуникальное имя {}!", newCategoryDto.getName());
-            throw new ConflictException(String.format("Категория имеет неуникальное имя %s!", newCategoryDto.getName()));
+            log.info("Категория имеет не уникальное имя {}!", newCategoryDto.getName());
+            throw new ConflictException(String.format("Категория имеет не уникальное имя %s!", newCategoryDto.getName()));
         }
     }
 }

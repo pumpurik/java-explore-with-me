@@ -19,20 +19,21 @@ import javax.validation.Valid;
 public class AdminCategoriesController {
     private final CategoryService categoryService;
     private final StatsClient statsClient;
+    private final String path = "/{catId}";
 
     @PostMapping
     public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody NewCategoryDto newCategoryDto) throws ConflictException {
         return new ResponseEntity<>(categoryService.createCategory(newCategoryDto), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{catId}")
+    @DeleteMapping(path)
     public ResponseEntity<Void> deleteCategory(@PathVariable Long catId) throws NotFoundException, ConflictException {
         categoryService.deleteCategory(catId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
     }
 
-    @PatchMapping("/{catId}")
+    @PatchMapping(path)
     public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long catId, @Valid @RequestBody NewCategoryDto updateCategoryDto) throws NotFoundException, ConflictException {
         return new ResponseEntity<>(categoryService.updateCategory(catId, updateCategoryDto), HttpStatus.OK);
     }
