@@ -41,6 +41,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventShortDto> getEventsUser(Long userId, PageRequest pageRequest) throws NotFoundException {
         return eventRepository.findByInitiator(userRepository.findById(userId).orElseThrow(() -> {
             log.info("События пользователя с айди {} не найдены!", userId);
@@ -50,6 +51,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto addNewEvent(Long userId, NewEventDto newEventDto) throws NotFoundException, ConflictException {
         dateValid(newEventDto.getEventDate());
         User user = userRepository.findById(userId).orElseThrow(() -> {
@@ -69,6 +71,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public EventFullDto getEventUser(Long userId, Long eventId) throws NotFoundException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
             log.info("Пользователь c айди {} не найден!", userId);

@@ -67,6 +67,7 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     private String convertSortProperty(SortEnum sortEnum) {
         if (sortEnum.equals(SortEnum.VIEWS)) return "views";
+        if (sortEnum.equals(SortEnum.RATING)) return "rating";
         else return "eventDate";
     }
 }
