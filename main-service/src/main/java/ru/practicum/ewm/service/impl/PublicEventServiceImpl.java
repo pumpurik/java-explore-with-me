@@ -38,7 +38,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                                     Sort.by(Sort.Order.desc(convertSortProperty(sort))))
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList()) :
                     eventRepository.findAllByPublic(
-                            text, categories, paid, rangeStart, rangeEnd, PageRequest.of(from, size,
+                            text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size,
                                     Sort.by(Sort.Order.desc(convertSortProperty(sort))))
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList())
             ;
@@ -49,7 +49,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                             text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size)
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList()) :
                     eventRepository.findAllByPublic(
-                            text, categories, paid, rangeStart, rangeEnd, PageRequest.of(from, size)
+                            text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size)
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList());
 
         }
