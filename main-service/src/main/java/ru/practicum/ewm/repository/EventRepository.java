@@ -49,17 +49,17 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             Sort sort);
 
     @Query("SELECT e FROM Event e WHERE " +
-            "(LOWER(e.annotation) LIKE LOWER(CONCAT('%', COALESCE(:text, ''), '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', COALESCE(:text, ''), '%')) ) " +
-            "AND (COALESCE(:categories, :emptyList) = :emptyList OR e.category.id IN :categories) " +
-            "AND (COALESCE(:paid, false) = false OR e.paid = :paid) " +
-            "AND ((COALESCE(:rangeStart, '') = '' OR COALESCE(:rangeEnd, '') = '') OR (e.eventDate BETWEEN cast(:rangeStart as date) AND cast(:rangeEnd as date)))")
+            "(LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%')) ) " +
+            "AND (COALESCE(:categories, NULL) IS NULL OR e.category.id IN :categories) " +
+            "AND (COALESCE(:paid, NULL) IS NULL OR e.paid = :paid) " +
+            "AND (COALESCE(:rangeStart, NULL) IS NULL OR COALESCE(:rangeEnd, NULL) IS NULL OR " +
+            "(e.eventDate BETWEEN cast(:rangeStart as date) AND cast(:rangeEnd as date)))")
     Page<Event> findAllByPublic(
             @Param("text") String text,
             @Param("categories") List<Long> categories,
             @Param("paid") Boolean paid,
             @Param("rangeStart") LocalDateTime rangeStart,
             @Param("rangeEnd") LocalDateTime rangeEnd,
-            @Param("emptyList") List<Long> emptyList,
             Pageable pageable);
 
     @Query("SELECT e FROM Event e " +

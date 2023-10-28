@@ -14,7 +14,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "events", schema = "public")
-@ToString(exclude = {"confirmedRequests", "category", "initiator", "userAction"}, callSuper = false)
+@ToString(exclude = {"confirmedRequests", "category", "initiator"}, callSuper = false)
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,12 +51,6 @@ public class Event {
     EventStateEnum state = EventStateEnum.PENDING;
     @Column(name = "title")
     String title;
-
-    @OneToMany(mappedBy = "event")
-    List<UserAction> userAction;
-    @Column(name = "rating")
-    double rating;
-
 
 //    @ManyToMany(mappedBy = "events")
 //    Set<Compilation> compilation = new LinkedHashSet<>();
