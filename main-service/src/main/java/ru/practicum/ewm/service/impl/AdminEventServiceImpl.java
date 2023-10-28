@@ -48,6 +48,7 @@ public class AdminEventServiceImpl implements AdminEventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) throws NotFoundException, ConflictException {
         Category category = null;
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.domain.Compilation;
 import ru.practicum.ewm.domain.Event;
 import ru.practicum.ewm.dto.compilation.CompilationDto;
@@ -31,12 +32,14 @@ public class CompilationServiceImpl implements CompilationService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public List<CompilationDto> getCompilations(PageRequest pageRequest) {
         return compilationRepository.findAll(pageRequest).stream()
                 .map(compilationMapping::compilationToDto).collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CompilationDto getCompilation(Long compId) throws NotFoundException {
         return compilationMapping.compilationToDto(compilationRepository.findById(compId).orElseThrow(() -> {
             log.info("Подборка событий c айди {} не найдена!", compId);
@@ -64,6 +67,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateCompilationRequest) throws NotFoundException {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> {
             log.info("Подборка событий c айди {} не найдена!", compId);
