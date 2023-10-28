@@ -85,6 +85,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     }
 
     @Override
+    @Transactional
     public ParticipationRequestDto cancelRequestParticipation(Long userId, Long requestId) throws NotFoundException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
             log.info("Пользователь c айди {} не найден!", userId);
