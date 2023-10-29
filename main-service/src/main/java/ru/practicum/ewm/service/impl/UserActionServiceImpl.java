@@ -68,6 +68,7 @@ public class UserActionServiceImpl implements UserActionService {
         eventRepository.save(event);
         Optional<UserAction> byUserAndEvent = userActionRepository.findByUserAndEvent(user, event);
         if (byUserAndEvent.isPresent()) {
+            log.info("Пользователь по id = {} уже лайкнул eventId = {}", userId, eventId);
             throw new ConflictException(String.format("Пользователь по id = %s уже лайкнул eventId = %s", userId, eventId));
         }
         UserAction userAction = new UserAction();
