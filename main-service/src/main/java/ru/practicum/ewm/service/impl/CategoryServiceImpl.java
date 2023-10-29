@@ -33,8 +33,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto getCategory(Long catId) throws NotFoundException {
         return categoryMapping.categoryToCategoryDto(categoryRepository.findById(catId).orElseThrow(() -> {
-            log.info("Категория c айди {} не найдена!", catId);
-            return new NotFoundException(String.format("Категория c айди %s не найдена!", catId));
+            log.info("Категория c id {} не найдена!", catId);
+            return new NotFoundException(String.format("Категория c id %s не найдена!", catId));
         }));
     }
 
@@ -51,8 +51,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteCategory(Long catId) throws NotFoundException, ConflictException {
         Category category = categoryRepository.findById(catId).orElseThrow(() -> {
-            log.info("Категории с айди {} не существует!", catId);
-            return new NotFoundException(String.format("Категории с айди %s не существует!", catId));
+            log.info("Категории с id {} не существует!", catId);
+            return new NotFoundException(String.format("Категории с id %s не существует!", catId));
         });
         if (!category.getEvents().isEmpty())
             throw new ConflictException("C категорией не должно быть связано ни одного события!");

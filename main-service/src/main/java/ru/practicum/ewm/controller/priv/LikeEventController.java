@@ -13,19 +13,20 @@ import ru.practicum.ewm.service.UserActionService;
 @RequiredArgsConstructor
 @RequestMapping(path = "/users")
 public class LikeEventController {
+    private final static String USER_ACTION_PATH = "/{userId}/events/{eventId}";
     private final UserActionService userActionService;
 
-    @PostMapping("/{userId}/events/{eventId}/like")
+    @PostMapping(USER_ACTION_PATH + "/like")
     public ResponseEntity<UserActionDto> postLike(@PathVariable("userId") Long userId, @PathVariable("eventId") Long eventId) throws ConflictException, NotFoundException {
         return new ResponseEntity<>(userActionService.postLike(userId, eventId), HttpStatus.CREATED);
     }
 
-    @PostMapping("/{userId}/events/{eventId}/dislike")
+    @PostMapping(USER_ACTION_PATH + "/dislike")
     public ResponseEntity<UserActionDto> postDislike(@PathVariable("userId") Long userId, @PathVariable("eventId") Long eventId) throws ConflictException, NotFoundException {
         return new ResponseEntity<>(userActionService.postDislike(userId, eventId), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{userId}/events/{eventId}/delete")
+    @DeleteMapping(USER_ACTION_PATH + "/delete")
     public ResponseEntity<Void> deleteLikeOrDislike(@PathVariable("userId") Long userId, @PathVariable("eventId") Long eventId) throws ConflictException, NotFoundException {
         userActionService.deleteLikeOrDislike(userId, eventId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

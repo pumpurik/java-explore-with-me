@@ -60,7 +60,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     @Override
     public EventFullDto getEvent(Long id) throws NotFoundException {
         return eventMapping.eventToEventFullDto(eventRepository.findByIdAndState(id, EventStateEnum.PUBLISHED).orElseThrow(() -> {
-            log.info("Событие с айди {} не найдено!", id);
+            log.info("Событие с id {} не найдено!", id);
             return new NotFoundException(String.format("Событие не найдено c айди %s не найдено!", id));
         }));
     }

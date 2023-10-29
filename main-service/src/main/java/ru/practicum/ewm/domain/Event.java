@@ -56,8 +56,4 @@ public class Event {
     List<UserAction> userAction;
     @Column(name = "rating")
     double rating;
-
-
-//    @ManyToMany(mappedBy = "events")
-//    Set<Compilation> compilation = new LinkedHashSet<>();
 }

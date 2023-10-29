@@ -51,11 +51,11 @@ public class UserActionServiceImpl implements UserActionService {
 
     private UserAction actionUserValid(Long userId, Long eventId, boolean isLike) throws NotFoundException, ConflictException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("Пользователь c айди {} не найден!", userId);
+            log.info("Пользователь c id {} не найден!", userId);
             return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         });
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Событие c айди {} не найдено!", eventId);
+            log.info("Событие c id {} не найдено!", eventId);
             return new NotFoundException(String.format("Событие c айди %s не найдено!", eventId));
         });
         Map<ActionTypeEnum, Long> actionCounts = event.getUserAction().stream()
@@ -89,8 +89,8 @@ public class UserActionServiceImpl implements UserActionService {
             return new NotFoundException(String.format("Событие c айди %s не найдено!", eventId));
         });
         userActionRepository.delete(userActionRepository.findByUserAndEvent(user, event).orElseThrow(() -> {
-            log.info("UserAction не найдено!");
-            return new NotFoundException("UserAction не найдено!");
+            log.info("UserAction не найдено по user: {} и по event: {}", user, event);
+            return new NotFoundException(String.format("UserAction не найдено по user: %s и по event: %s", user, event));
         }));
     }
 
@@ -105,8 +105,8 @@ public class UserActionServiceImpl implements UserActionService {
             return new NotFoundException(String.format("Событие c айди %s не найдено!", eventId));
         });
         return userActionMapping.toDto(userActionRepository.findByUserAndEvent(user, event).orElseThrow(() -> {
-            log.info("UserAction не найдено!");
-            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
+            log.info("UserAction не найдено по user: {} и по event: {}", user, event);
+            return new NotFoundException(String.format("UserAction не найдено по user: %s и по event: %s", user, event));
         }));
     }
 

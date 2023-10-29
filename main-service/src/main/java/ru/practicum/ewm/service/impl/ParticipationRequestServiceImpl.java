@@ -45,11 +45,11 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     @Transactional
     public ParticipationRequestDto createRequestParticipation(Long userId, Long eventId) throws NotFoundException, ConflictException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("Пользователь c айди {} не найден!", userId);
+            log.info("Пользователь c id {} не найден!", userId);
             return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         });
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Событие c айди {} не найдено!", eventId);
+            log.info("Событие c id {} не найдено!", eventId);
             return new NotFoundException(String.format("Событие c айди %s не найдено!", eventId));
         });
         ParticipationRequestStatusEnum confirmed = ParticipationRequestStatusEnum.CONFIRMED;
@@ -88,13 +88,13 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     @Transactional
     public ParticipationRequestDto cancelRequestParticipation(Long userId, Long requestId) throws NotFoundException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("Пользователь c айди {} не найден!", userId);
-            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
+            log.info("Пользователь c id {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c id %s не найден!", userId));
         });
 
         ParticipationRequest participationRequest = participationRequestRepository.findById(requestId).orElseThrow(() -> {
-            log.info("Запрос c айди {} не найден!", requestId);
-            return new NotFoundException(String.format("Запрос c айди %s не найден!", requestId));
+            log.info("Запрос c id {} не найден!", requestId);
+            return new NotFoundException(String.format("Запрос c id %s не найден!", requestId));
         });
         participationRequest.setStatus(ParticipationRequestStatusEnum.CANCELED);
         return participationRequestMapping.participationRequestToDto(participationRequestRepository.save(participationRequest));
@@ -109,12 +109,12 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     @Override
     public EventRequestStatusUpdateResult updateEventUserRequest(Long userId, Long eventId, EventRequestStatusUpdateRequest requestUpdate) throws NotFoundException, ConflictException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("Пользователь c айди {} не найден!", userId);
-            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
+            log.info("Пользователь c id {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c id %s не найден!", userId));
         });
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Событие c айди {} не найдено!", eventId);
-            return new NotFoundException(String.format("Событие c айди %s не найдено!", eventId));
+            log.info("Событие c id {} не найдено!", eventId);
+            return new NotFoundException(String.format("Событие c id %s не найдено!", eventId));
         });
 
         List<ParticipationRequest> byIdIn = requestUpdate == null ?
