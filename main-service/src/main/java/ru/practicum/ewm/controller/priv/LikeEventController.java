@@ -13,7 +13,7 @@ import ru.practicum.ewm.service.UserActionService;
 @RequiredArgsConstructor
 @RequestMapping(path = "/users")
 public class LikeEventController {
-    private final static String USER_ACTION_PATH = "/{userId}/events/{eventId}";
+    private static final String USER_ACTION_PATH = "/{userId}/events/{eventId}";
     private final UserActionService userActionService;
 
     @PostMapping(USER_ACTION_PATH + "/like")

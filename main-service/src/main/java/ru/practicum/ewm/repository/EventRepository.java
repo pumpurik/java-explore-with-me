@@ -22,6 +22,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByInitiator(User user);
 
     List<Event> findByIdIn(List<Long> ids);
+
     @Query("SELECT e FROM Event e " +
             "WHERE e.state = 'PUBLISHED' " +
             "AND (LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%')) ) " +
