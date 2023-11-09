@@ -38,7 +38,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                                     Sort.by(Sort.Order.desc(convertSortProperty(sort))))
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList()) :
                     eventRepository.findAllByPublic(
-                            text, categories, paid, rangeStart, rangeEnd, PageRequest.of(from, size,
+                            text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size,
                                     Sort.by(Sort.Order.desc(convertSortProperty(sort))))
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList())
             ;
@@ -49,7 +49,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                             text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size)
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList()) :
                     eventRepository.findAllByPublic(
-                            text, categories, paid, rangeStart, rangeEnd, PageRequest.of(from, size)
+                            text, categories, paid, rangeStart, rangeEnd, Collections.emptyList(), PageRequest.of(from, size)
                     ).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList());
 
         }
@@ -60,13 +60,14 @@ public class PublicEventServiceImpl implements PublicEventService {
     @Override
     public EventFullDto getEvent(Long id) throws NotFoundException {
         return eventMapping.eventToEventFullDto(eventRepository.findByIdAndState(id, EventStateEnum.PUBLISHED).orElseThrow(() -> {
-            log.info("Событие с айди {} не найдено!", id);
+            log.info("Событие с id {} не найдено!", id);
             return new NotFoundException(String.format("Событие не найдено c айди %s не найдено!", id));
         }));
     }
 
     private String convertSortProperty(SortEnum sortEnum) {
         if (sortEnum.equals(SortEnum.VIEWS)) return "views";
+        if (sortEnum.equals(SortEnum.RATING)) return "rating";
         else return "eventDate";
     }
 }

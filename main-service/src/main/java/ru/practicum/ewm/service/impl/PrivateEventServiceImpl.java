@@ -41,24 +41,26 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventShortDto> getEventsUser(Long userId, PageRequest pageRequest) throws NotFoundException {
         return eventRepository.findByInitiator(userRepository.findById(userId).orElseThrow(() -> {
-            log.info("События пользователя с айди {} не найдены!", userId);
+            log.info("События пользователя с id {} не найдены!", userId);
             return new NotFoundException(String.format("События пользователя с айди %s не найдены!", userId));
         }), pageRequest).stream().map(eventMapping::eventToEventShortDto).collect(Collectors.toList());
 
     }
 
     @Override
+    @Transactional
     public EventFullDto addNewEvent(Long userId, NewEventDto newEventDto) throws NotFoundException, ConflictException {
         dateValid(newEventDto.getEventDate());
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("Пользователь c айди {} не найден!", userId);
+            log.info("Пользователь c id {} не найден!", userId);
             return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         });
         Category category = categoryRepository.findById(newEventDto.getCategory()).orElseThrow(() -> {
-            log.info("Категория с айди {} не найдена!", newEventDto.getCategory());
-            return new NotFoundException(String.format("Категория с айди %s не найдена!", newEventDto.getCategory()));
+            log.info("Категория с id {} не найдена!", newEventDto.getCategory());
+            return new NotFoundException(String.format("Категория с id %s не найдена!", newEventDto.getCategory()));
         });
         Event event = eventMapping.newCategoryDtoToCategory(newEventDto, category);
         event.setInitiator(user);
@@ -69,15 +71,16 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public EventFullDto getEventUser(Long userId, Long eventId) throws NotFoundException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("Пользователь c айди {} не найден!", userId);
+            log.info("Пользователь c id {} не найден!", userId);
             return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
         });
 
         return eventMapping.eventToEventFullDto(eventRepository.findByInitiatorAndId(user, eventId).orElseThrow(() -> {
-            log.info("Событие c айди {} и инициатором {} не найдено!", eventId, user);
-            return new NotFoundException(String.format("Событие c айди %s и инициатором %s не найдено!", eventId, user));
+            log.info("Событие c id {} и инициатором {} не найдено!", eventId, user);
+            return new NotFoundException(String.format("Событие c id %s и инициатором %s не найдено!", eventId, user));
         }));
     }
 
@@ -85,8 +88,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     @Transactional
     public EventFullDto updateEventUser(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) throws NotFoundException, ConflictException {
         User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.info("Пользователь c айди {} не найден!", userId);
-            return new NotFoundException(String.format("Пользователь c айди %s не найден!", userId));
+            log.info("Пользователь c id {} не найден!", userId);
+            return new NotFoundException(String.format("Пользователь c id %s не найден!", userId));
         });
         Optional<Event> byInitiatorAndId = eventRepository.findByInitiatorAndId(user, eventId);
         if (byInitiatorAndId.isPresent()) {

@@ -48,26 +48,27 @@ public class AdminEventServiceImpl implements AdminEventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) throws NotFoundException, ConflictException {
         Category category = null;
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
-            log.info("Событие с айди {} не найдено!", eventId);
-            return new NotFoundException(String.format("Событие не найдено c айди %s не найдено!", eventId));
+            log.info("Событие с id {} не найдено!", eventId);
+            return new NotFoundException(String.format("Событие не найдено c id %s не найдено!", eventId));
         });
         if (!event.getState().equals(EventStateEnum.PENDING) && equalsIgnoreNullFalse.apply(getOrDefault(() ->
                 updateEventAdminRequest.getStateAction().name(), StateActionEnum.PUBLISH_EVENT.name()), StateActionEnum.PUBLISH_EVENT.name())) {
-            log.info("Событие с айди {} можно публиковать, только если оно в состоянии ожидания публикации!", eventId);
-            throw new ConflictException(String.format("Событие с айди %s можно публиковать, только если оно в состоянии ожидания публикации!", eventId));
+            log.info("Событие с id {} можно публиковать, только если оно в состоянии ожидания публикации!", eventId);
+            throw new ConflictException(String.format("Событие с id %s можно публиковать, только если оно в состоянии ожидания публикации!", eventId));
         }
         if (event.getState().equals(EventStateEnum.CANCELED) && equalsIgnoreNullFalse.apply(getOrDefault(() ->
                 updateEventAdminRequest.getStateAction().name(), StateActionEnum.PUBLISH_EVENT.name()), StateActionEnum.PUBLISH_EVENT.name())) {
             log.info("Событие с айди {} можно принять, только если оно не отклонено!", eventId);
-            throw new ConflictException(String.format("Событие с айди %s можно принять, только если оно не отклонено!", eventId));
+            throw new ConflictException(String.format("Событие с id %s можно принять, только если оно не отклонено!", eventId));
         }
         if (equalsIgnoreNullFalse.apply(getOrNull(() -> updateEventAdminRequest.getStateAction().name()), StateActionEnum.REJECT_EVENT.name()) &&
                 event.getState().equals(EventStateEnum.PUBLISHED)) {
             log.info("Событие с айди {} можно отклонить, только если оно еще не опубликовано!", eventId);
-            throw new ConflictException(String.format("Событие с айди %s можно отклонить, только если оно еще не опубликовано!", eventId));
+            throw new ConflictException(String.format("Событие с id %s можно отклонить, только если оно еще не опубликовано!", eventId));
         }
         if (updateEventAdminRequest != null) {
             if (updateEventAdminRequest.getCategory() != null) {

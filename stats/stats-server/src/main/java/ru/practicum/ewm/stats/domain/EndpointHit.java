@@ -21,7 +21,7 @@ public class EndpointHit {
     long id;
     @Column(name = "app")
     String app;
-    @Column(name = "uri", unique = true)
+    @Column(name = "uri")
     String uri;
     @Column(name = "ip")
     String ip;
